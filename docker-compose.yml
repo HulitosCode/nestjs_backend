@@ -1,0 +1,13 @@
+services:
+
+    postgres:
+      image: bitnami/postgresql:latest
+      ports:
+        - "5432:5432"
+      environment:
+        POSTGRESQL_USER: admin
+        POSTGRESQL_PASSWORD: admin
+        POSTGRESQL_DATABASE: articles
+
+#Acessar DB psql -h localhost -U myuser -d mydatabase
+#docker compose exec postgres psql -U tasks -d tasks
