@@ -34,9 +34,9 @@ export class ArticlesService {
       where: {
         id,
       },
-      // include: {
-      //   author: true,
-      // },
+      include: {
+        author: true,
+      },
     });
   }
 
