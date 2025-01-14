@@ -31,4 +31,7 @@ export class CreateArticleDto {
   @IsOptional()
   @ApiProperty({ required: true, default: true })
   published?: boolean = true;
+
+  @ApiProperty({ required: false, nullable: true })
+  authorId: number | null;
 }

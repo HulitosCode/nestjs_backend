@@ -8,6 +8,9 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Req,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -27,26 +30,39 @@ export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiConflictResponse({ type: ArticleEntity })
-  async create(@Body() createArticleDto: CreateArticleDto) {
-    return new ArticleEntity(
-      await this.articlesService.create(createArticleDto),
-    );
+  async create(
+    @Body() createArticleDto: CreateArticleDto,
+    @Req() req: any,
+  ): Promise<ArticleEntity> {
+    // Aqui, o request.user deve estar preenchido pelo JwtAuthGuard
+    if (!req.user) {
+      throw new UnauthorizedException('User not authenticated');
+    }
+    const userId = req.user.id; // O userId vem do payload do JWT
+    if (!userId) {
+      throw new UnauthorizedException('User Id not found in request');
+    }
+    const article = await this.articlesService.create(createArticleDto, userId);
+    return new ArticleEntity(article);
   }
 
   @Get()
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({ type: ArticleEntity, isArray: true })
-  async findAll() {
-    const articles = await this.articlesService.findAll();
+  async findAll(@Req() req: any): Promise<ArticleEntity[]> {
+    const userId = req.user.id;
+    const articles = await this.articlesService.findAll(userId);
 
     return articles.map((article) => new ArticleEntity(article));
   }
 
   @Get('drafts')
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({ type: ArticleEntity, isArray: true })
   async findDrafts() {
     const drafts = await this.articlesService.findDrafts();
@@ -55,16 +71,20 @@ export class ArticlesController {
   }
 
   @Get(':id')
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({ type: ArticleEntity })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return new ArticleEntity(await this.articlesService.findOne(id));
+    const article = await this.articlesService.findOne(id);
+    if (!article) {
+      throw new NotFoundException('Article not found!');
+    }
+    return new ArticleEntity(article);
   }
 
   @Patch(':id')
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({ type: ArticleEntity })
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -76,8 +96,8 @@ export class ArticlesController {
   }
 
   @Delete(':id')
-  // @UseGuards(JwtAuthGuard)
-  // @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({ type: ArticleEntity })
   async remove(@Param('id', ParseIntPipe) id: number) {
     return new ArticleEntity(await this.articlesService.remove(id));

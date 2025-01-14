@@ -2,14 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Article } from '@prisma/client';
 
 @Injectable()
 export class ArticlesService {
   constructor(private prismaService: PrismaService) {}
 
-  create(createArticleDto: CreateArticleDto) {
+  create(createArticleDto: CreateArticleDto, userId: number): Promise<Article> {
     return this.prismaService.article.create({
-      data: createArticleDto,
+      data: {
+        ...createArticleDto,
+        authorId: userId, // Associar o artigo ao usuário autenticado
+      },
     });
   }
 
@@ -21,10 +25,11 @@ export class ArticlesService {
     });
   }
 
-  findAll() {
+  findAll(userId: number): Promise<Article[]> {
     return this.prismaService.article.findMany({
       where: {
         published: true,
+        authorId: userId, // Filtra artigos publicados do usuário
       },
     });
   }
@@ -35,7 +40,7 @@ export class ArticlesService {
         id,
       },
       include: {
-        author: true,
+        author: true, // Incluir dados do autor
       },
     });
   }
@@ -45,7 +50,7 @@ export class ArticlesService {
       where: {
         id,
       },
-      data: updateArticleDto,
+      data: updateArticleDto, // Atualizar os dados do artigo
     });
   }
 
