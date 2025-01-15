@@ -9,7 +9,7 @@ async function bootstrap() {
   // Habilitar CORS para todos os domínios ou um domínio específico
   app.enableCors({
     origin: 'https://next-frontend-fv2e.onrender.com', // Altere para o URL do seu frontend
-    methods: 'GET,POST,PUT,DELETE',
+    methods: 'GET,POST,PATCH,PUT,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
   });
 
