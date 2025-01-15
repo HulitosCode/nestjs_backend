@@ -61,8 +61,8 @@ export class ArticlesController {
   }
 
   @Get('drafts')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
   @ApiOkResponse({ type: ArticleEntity, isArray: true })
   async findDrafts() {
     const drafts = await this.articlesService.findDrafts();
